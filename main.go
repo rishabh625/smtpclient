@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -9,47 +10,48 @@ import (
 	"sync"
 )
 
-var fname, host, rcpt, from, username, password string
-var session, count int
+//var fname, host, rcpt, from, username, password string
+//var session, count int
 
 func main() {
 	//smtpi.TestSmtpi()
-	flag.StringVar(&host, "--host", "stage2.pepipost.com:25", "Host name : port of smtp")
-	flag.StringVar(&fname, "--filepath", "email.eml", "File name")
-	flag.StringVar(&rcpt, "--rcpt", "rishabhmishra131@gmail.com", "From Email")
-	flag.StringVar(&from, "--from", "newpricing04@pepitest.xyz", "Recipient")
-	flag.StringVar(&username, "--username", "", "Username")
-	flag.StringVar(&password, "--password", "", "Password")
-	flag.IntVar(&session, "--session", 1, "Parallel smtp session")
-	flag.IntVar(&count, "--count", 1, "No of messages per session")
-	flag.Parse()
-	// cfg := &tls.Config{
-	// 	MinVersion:               tls.VersionTLS12,
-	// 	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-	// 	PreferServerCipherSuites: true,
-	// 	CipherSuites: []uint16{
-	// 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-	// 		tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-	// 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-	// 		tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-	// 	},
-	// 	InsecureSkipVerify: false,
-	// 	ServerName:         host,
-	// }
-	//c.StartTLS(cfg)
+
+	host := flag.String("host", "stage2.pepipost.com:25", "Host name : port of smtp")
+	fname := flag.String("filepath", "email.eml", "File name")
+	rcpt := flag.String("rcpt", "rishabhmishra131@gmail.com", "From Email")
+	from := flag.String("from", "newpricing04@pepitest.xyz", "Recipient")
+	username := flag.String("username", "", "Username")
+	password := flag.String("password", "", "Password")
+	session := flag.Int("session", 1, "Parallel smtp session")
+	count := flag.Int("count", 1, "No of messages per session")
+	starttles := flag.Bool("tls", false, "START TLS True or false")
+	cfg := &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+		PreferServerCipherSuites: true,
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+		},
+		InsecureSkipVerify: false,
+		ServerName:         *host,
+	}
 	//count := 1
+	flag.Parse()
 	wg := sync.WaitGroup{}
-	for i := 0; i < session; i++ {
+	for i := 0; i < *session; i++ {
 		fmt.Printf("Sending message %d\n", i)
-		c := smtpConnection(host, username, password)
-		con, err := ioutil.ReadFile(fname)
+		c := smtpConnection(*host, *username, *password, *starttles, cfg)
+		con, err := ioutil.ReadFile(*fname)
 		if err != nil {
 			fmt.Println("Failed to read file")
 		}
 		wg.Add(1)
 		go func() {
-			for k := 0; k < count; k++ {
-				sendMail(c, from, rcpt, "", con)
+			for k := 0; k < *count; k++ {
+				sendMail(c, *from, *rcpt, "", con)
 			}
 			//log.Printf("Trying to reconnect to smtp server")
 			wg.Done()
@@ -61,11 +63,15 @@ func main() {
 func quarantineMail() {
 
 }
-func smtpConnection(server string, username, password string) *smtpi.Client {
+func smtpConnection(server string, username, password string, starttls bool, cfg *tls.Config) *smtpi.Client {
 	c, err := smtpi.Dial(server, "localhost")
 	if err != nil {
 		log.Fatal(err)
 	}
+	if starttls {
+		c.StartTLS(cfg, "localhost")
+	}
+
 	if username != "" && password != "" {
 		auth := smtpi.PlainAuth("", "user@example.com", "password", server)
 
