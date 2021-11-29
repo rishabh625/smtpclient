@@ -1,38 +1,11 @@
-# A collapsible section containing markdown
-<details>
-  <summary>Click to expand!</summary>
-  
-  ## Heading
-  1. A numbered
-  2. list
-     * With some
-     * Sub bullets
-</details>
+# RCS API Phase 2.0 
+## Document Structure
 
-# A collapsible section containing code
+### Schema 2.0
+**messages** object
 <details>
-  <summary>Click to expand!</summary>
+  <summary>**messages** object Array of Messages To be Sent</summary>
   
-  ```javascript
-    function logSometing(something) {
-      console.log(`Logging: ${something}`);
-    }
-  ```
-</details>
-
-# How to structure
-```
-# A collapsible section with markdown
-<details>
-  <summary>Click to expand!</summary>
+  **from** string From Agent Name
   
-  ## Heading
-  1. A numbered
-  2. list
-     * With some
-     * Sub bullets
 </details>
-```
-**Two important rules:**
-1. Make sure you have an **empty line** after the closing `</summary>` tag, otherwise the markdown/code blocks won't show correctly.
-2. Make sure you have an **empty line** after the closing `</details>` tag if you have multiple collapsible sections.
