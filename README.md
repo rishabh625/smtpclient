@@ -5,7 +5,8 @@
 **messages** object
 <details>
   <summary> <b>messages</b> <p style="color:green" > object </p> Array of Messages To be Sent</summary>
-  
-  **from** string From Agent Name
-  
+  |  Parameter   |    type    | Description                                                                         |
+  |--------------|------------|-------------------------------------------------------------------------------------|
+  |    **from**  |   String   | From Agent Name                                                                     |
+  |              |            |                                                                                     |  
 </details>
